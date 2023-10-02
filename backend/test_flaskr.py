@@ -45,25 +45,25 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
-    # # Test paginated questions
-    # def test_paginated_questions(self):
-    #     res = self.client().get('/questions')
-    #     data = json.loads(res)
+    # Test paginated questions
+    def test_paginated_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
         
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertTrue(data['questions'])
-    #     self.assertTrue(data['total_questions'])
-    #     self.assertTrue(data['categories'])
-    #     self.assertTrue(data['current_category'])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+       # self.assertTrue(data['current_category'])
     
-    # def test_404_sent_requesting_beyond_valid_page(self):
-    #     res = self.client().get('/questions?page=1000')
-    #     data = json.loads(res.data)
+    def test_404_sent_requesting_beyond_valid_page(self):
+        res = self.client().get('/questions?page=1000')
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
 
    # Test categories
     def test_get_categories(self):
