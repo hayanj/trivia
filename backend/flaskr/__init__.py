@@ -8,6 +8,14 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    formatted_questions = [question.format() for question in selection]
+
+    return formatted_questions[start:end]
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
@@ -36,9 +44,14 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     """
-    # @app.route('/categories')
-    # def get_categories():
-    #     return ''
+    @app.route('/categories')
+    def get_categories():
+        selection = Category.query.order_by(Category.id).all()
+        categories = [category.type for category in selection]
+        return jsonify({
+            'success': True,
+            'categories': categories,
+        })
 
 
     """
@@ -113,6 +126,36 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
-
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            'success': False,
+            'message': 'resource not found',
+            'error': 404
+        }), 404
+    
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            'success': False,
+            'message': 'resource unprocessable',
+            'error': 422
+        }), 422
+    
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'success': False,
+            'message': 'Bad request',
+            'error': 400
+        }), 400
+    
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            'success': False,
+            'message': 'method not allowed',
+            'error': 405
+        }), 405
     return app
 
