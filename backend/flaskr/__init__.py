@@ -85,7 +85,7 @@ def create_app(test_config=None):
                 'current_category': current_category
                 })
         except:
-            abort(400)
+            abort(404)
     
     """
     Endpoint to DELETE question using a question ID.
@@ -120,7 +120,7 @@ def create_app(test_config=None):
             })
         
         except:
-            abort(400)
+            abort(404)
 
     """
     Endpoint to POST a new question,
@@ -160,11 +160,10 @@ def create_app(test_config=None):
     """
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
+        # Get search term
+        body = request.get_json()
+        search_term = body.get("searchTerm")
         try:
-            # Get search term
-            body = request.get_json()
-            search_term = body.get("searchTerm")
-
             # Select all questions that includes the search term and paginate them
             selection = Question.query.order_by(Question.id).filter(
                         Question.question.ilike("%{}%".format(search_term))
