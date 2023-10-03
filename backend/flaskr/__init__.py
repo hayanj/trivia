@@ -46,7 +46,7 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        selection = Category.query.order_by(int(Category.id+1)).all()
+        selection = Category.query.order_by(Category.id).all()
         categories = [category.type for category in selection]
         return jsonify({
             'success': True,
