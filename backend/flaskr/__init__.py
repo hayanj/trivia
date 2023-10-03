@@ -47,11 +47,11 @@ def create_app(test_config=None):
     def get_categories():
         selection = Category.query.order_by(Category.id).all()
         categories = [category.type for category in selection]
+
         return jsonify({
             'success': True,
             'categories': categories,
         })
-
 
     """
     Endpoint to handle GET requests for questions,
@@ -122,7 +122,6 @@ def create_app(test_config=None):
         except:
             abort(400)
 
-
     """
     Endpoint to POST a new question,
     which will require the question and answer text,
@@ -139,7 +138,8 @@ def create_app(test_config=None):
             category = body.get('category', None)
 
             # Create new question and add to db
-            question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
+            question = Question(question=question, answer=answer, 
+                                difficulty=difficulty, category=category)
             question.insert()
 
             # Select all questions
@@ -227,7 +227,8 @@ def create_app(test_config=None):
                 questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
             
             else:
-                questions = Question.query.filter_by(category=str(category_id)).filter(Question.id.notin_(previous_questions)).all()
+                questions = Question.query.filter_by(category=str(category_id)).filter(
+                    Question.id.notin_(previous_questions)).all()
 
             # Select a random question from the questions list    
             index = random.randint(0, len(questions)-1)
@@ -239,7 +240,6 @@ def create_app(test_config=None):
                 })
         except:
             abort(404)
-
 
     """
     Error handlers
