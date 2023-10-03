@@ -46,7 +46,7 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        selection = Category.query.order_by(Category.id).all()
+        selection = Category.query.order_by(int(Category.id+1)).all()
         categories = [category.type for category in selection]
         return jsonify({
             'success': True,
@@ -93,6 +93,27 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     """
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter_by(id=question_id).one_or_none()
+
+            question.delete()
+            current_category = request.args.get('category')
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+            c_selection = Category.query.order_by(Category.id).all()
+            categories = [category.type for category in c_selection]
+            return jsonify({
+            'success': True,
+            'questions': current_questions,
+            'total_questions':len(selection),
+            'categories': categories,
+            'current_category': current_category
+            })
+        except:
+            abort(404)
+
 
     """
     @TODO:
@@ -208,19 +229,20 @@ def create_app(test_config=None):
         print(body)
         quiz_category = body.get('quiz_category')
         previous_questions = body.get('previous_questions', None)
+        category_id = int(quiz_category['id'])+1
         try:
-            if(int(quiz_category['id']) == 0):
+            if( quiz_category['type'] == 'click'):
                 questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
             
             else:
-                questions = Question.query.filter_by(category=str(quiz_category['id'])).filter(Question.id.notin_(previous_questions)).all()
+                questions = Question.query.filter_by(category=str(category_id)).filter(Question.id.notin_(previous_questions)).all()
                 
             index = random.randint(0, len(questions)-1)
             random_question = questions[index]
             print(random_question.format())
             return jsonify({
                 'success': True,
-                'currentQuestion': random_question.format()            
+                'question': random_question.format()            
                 })
         except:
             abort(404)
