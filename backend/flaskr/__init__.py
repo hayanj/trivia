@@ -8,7 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-# a function to help in paginating the questions
+# A function to help in paginating the questions
 def paginate_questions(request, selection):
     page = request.args.get('page', 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -18,7 +18,7 @@ def paginate_questions(request, selection):
     return formatted_questions[start:end]
 
 def create_app(test_config=None):
-    # create and configure the app
+    # Create and configure the app
     app = Flask(__name__)
     setup_db(app)
 
@@ -41,7 +41,7 @@ def create_app(test_config=None):
         return response
     
     """
-    endpoint to handle GET requests for all available categories.
+    Endpoint to handle GET requests for all available categories.
     """
     @app.route('/categories')
     def get_categories():
@@ -54,7 +54,7 @@ def create_app(test_config=None):
 
 
     """
-    endpoint to handle GET requests for questions,
+    Endpoint to handle GET requests for questions,
     including pagination (every 10 questions).
     This endpoint should return a list of questions,
     number of total questions, current category, categories.
@@ -62,18 +62,18 @@ def create_app(test_config=None):
     @app.route('/questions')
     def get_questions():
         try:
-            # select all questions to paginate
+            # Select all questions to paginate
             selection = Question.query.order_by(Question.id).all() 
             current_questions = paginate_questions(request, selection)
 
-            #if there are no more questions return 404
+            # If there are no more questions return 404
             if (len(current_questions) == 0):
                 abort(404)
 
-            # get current category from args if exists
+            # Get current category from args if exists
             current_category = request.args.get('category')
 
-            # select all categories and extract the type
+            # Select all categories and extract the type
             c_selection = Category.query.order_by(Category.id).all()
             categories = [category.type for category in c_selection]
 
@@ -88,26 +88,26 @@ def create_app(test_config=None):
             abort(400)
     
     """
-    endpoint to DELETE question using a question ID.
+    Endpoint to DELETE question using a question ID.
     """
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
         try:
             question = Question.query.filter_by(id=question_id).one_or_none()
-            # if the question is not found return 404
+            # If the question is not found return 404
             if (question is None):
                 abort(404)
 
             question.delete()
 
-            # get current category from args if exists
+            # Get current category from args if exists
             current_category = request.args.get('category')
 
-            # select all questions to paginate
+            # Select all questions to paginate
             selection = Question.query.order_by(Question.id).all()
             current_questions = paginate_questions(request, selection)
 
-            # select all categories and extract the type
+            # Select all categories and extract the type
             c_selection = Category.query.order_by(Category.id).all()
             categories = [category.type for category in c_selection]
 
@@ -124,39 +124,31 @@ def create_app(test_config=None):
 
 
     """
-    endpoint to POST a new question,
+    Endpoint to POST a new question,
     which will require the question and answer text,
     category, and difficulty score.
     """
     @app.route('/questions', methods=['POST'])
     def create_question():
         try:
-            # get questions parameters
+            # Get questions parameters
             body = request.get_json()
             question = body.get('question', None)
             answer = body.get('answer', None)
             difficulty = body.get('difficulty', None)
             category = body.get('category', None)
 
-            # create new question and add to db
+            # Create new question and add to db
             question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
             question.insert()
 
-            # select all questions to paginate
+            # Select all questions
             questions = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, questions)
-
-            # select all categories and extract the type
-            c_selection = Category.query.order_by(Category.id).all()
-            categories = [category.type for category in c_selection]
 
             return jsonify({
                 'success': True,
                 'created': question.id,
-                'questions': current_questions,
-                'total_questions': len(questions),
-                'categories': categories,
-                'current_category': question.category
+                'total_questions': len(questions)
             })
         except:
             abort(405)
@@ -169,17 +161,17 @@ def create_app(test_config=None):
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
         try:
-            # get search term
+            # Get search term
             body = request.get_json()
             search_term = body.get("searchTerm")
 
-            # select all questions that includes the search term and paginate them
+            # Select all questions that includes the search term and paginate them
             selection = Question.query.order_by(Question.id).filter(
                         Question.question.ilike("%{}%".format(search_term))
             )
             current_questions = paginate_questions(request, selection)
 
-            # get current category from args if exists
+            # Get current category from args if exists
             current_category = request.args.get('category')
 
             return jsonify(
@@ -198,10 +190,10 @@ def create_app(test_config=None):
     """
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
-        # get the specific category
+        # Get the specific category
         category = Category.query.filter_by(id=category_id).one_or_none()
         try:
-            # select all questions that belongs to the category and paginate
+            # Select all questions that belongs to the category and paginate
             questions = Question.query.filter_by(category=str(category.id)).all()
             current_questions = paginate_questions(request, questions)
             
@@ -224,20 +216,20 @@ def create_app(test_config=None):
     @app.route('/quizzes', methods=['POST'])
     def play_quiz():
         try:
-            # get all quiz info and add 1 to category id
+            # Get all quiz info and add 1 to category id
             body = request.get_json()
             quiz_category = body.get('quiz_category')
             previous_questions = body.get('previous_questions', None)
             category_id = int(quiz_category['id'])+1
 
-            # if user selects all
+            # If user selects all
             if( quiz_category['type'] == 'click'):
                 questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
             
             else:
                 questions = Question.query.filter_by(category=str(category_id)).filter(Question.id.notin_(previous_questions)).all()
 
-            # select a random question from the questions list    
+            # Select a random question from the questions list    
             index = random.randint(0, len(questions)-1)
             random_question = questions[index]
             print(random_question.format())
@@ -250,7 +242,7 @@ def create_app(test_config=None):
 
 
     """
-    error handlers
+    Error handlers
     """
     @app.errorhandler(404)
     def not_found(error):
