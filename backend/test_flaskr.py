@@ -168,7 +168,7 @@ class TriviaTestCase(unittest.TestCase):
         
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['current_question']['category'], '3')
+        self.assertTrue(data['currentQuestion']['category'], '3')
     
     def test_404_quiz_not_found(self):
         quiz = {
