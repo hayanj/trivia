@@ -103,24 +103,24 @@ class TriviaTestCase(unittest.TestCase):
     #     self.assertEqual(data['success'], False)
     #     self.assertEqual(data['message'], 'resource unprocessable')
     
-    # # Test post question
-    # def test_create_question(self):
-    #     res = self.client().post('/questions', json=self.new_question)
-    #     data = json.loads(res.data)
+    # Test post question
+    def test_create_question(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
         
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertTrue(data['created'])
-    #     self.assertTrue(data['questions'])
-    #     self.assertTrue(data['total_questions'])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
 
-    # def test_405_question_creation_not_allowed(self):
-    #     res = self.client().post('/questions/3', json=self.new_question)
-    #     data = json.loads(res.data)
+    def test_404_question_not_found(self):
+        res = self.client().post('/questions/8', json=self.new_question)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 405)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'], 'method not allowed')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
     
     # # Test search questions
     # def test_search_question(self):
