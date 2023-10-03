@@ -177,19 +177,19 @@ def create_app(test_config=None):
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
         category = Category.query.filter_by(id=category_id).one_or_none()
-        # try:
-        questions = Question.query.filter_by(category=str(category.id)).all()
-        current_questions = paginate_questions(request, questions)
+        try:
+            questions = Question.query.filter_by(category=str(category.id)).all()
+            current_questions = paginate_questions(request, questions)
+            
+            return jsonify({
+                "success": True,
+                "questions": current_questions,
+                "total_questions": len(questions),
+                "current_category": category.type
+            })
         
-        return jsonify({
-            "success": True,
-            "questions": current_questions,
-            "total_questions": len(questions),
-            "current_category": category.type
-        })
-        
-        # except:
-        #     abort(404)
+        except:
+            abort(404)
 
     """
     @TODO:
@@ -202,6 +202,29 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
+    @app.route('/quizzes', methods=['POST'])
+    def play_quiz():
+        body = request.get_json()
+        print(body)
+        quiz_category = body.get('quiz_category')
+        previous_questions = body.get('previous_questions', None)
+        try:
+            if(int(quiz_category['id']) == 0):
+                questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
+            
+            else:
+                questions = Question.query.filter_by(category=str(quiz_category['id'])).filter(Question.id.notin_(previous_questions)).all()
+                
+            index = random.randint(0, len(questions)-1)
+            random_question = questions[index]
+            print(random_question.format())
+            return jsonify({
+                'success': True,
+                'currentQuestion': random_question.format()            
+                })
+        except:
+            abort(404)
+
 
     """
     @TODO:

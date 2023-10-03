@@ -26,7 +26,7 @@ class TriviaTestCase(unittest.TestCase):
         self.quiz = {
             'previous_questions': [13],
             'quiz_category': {
-                'type': 'Entertainment',
+                'type': 'Geography',
                 'id': '3'
             }
         }
@@ -142,48 +142,48 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data['questions']))
 
 
-    # # Test get questions by category
-    # def test_questions_by_categories(self):
-    #     res = self.client().get('/categories/2/questions')
-    #     data = json.loads(res.data)
+    # Test get questions by category
+    def test_questions_by_categories(self):
+        res = self.client().get('/categories/2/questions')
+        data = json.loads(res.data)
         
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertTrue(data['questions'])
-    #     self.assertTrue(data['total_questions'])
-    #     self.assertTrue(data['current_category'])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['current_category'])
     
-    # def test_404_sent_requesting_beyond_valid_page(self):
-    #     res = self.client().get('/categories/2/questions?page=1000')
-    #     data = json.loads(res.data)
+    def test_404_non_exsisting_category(self):
+        res = self.client().get('/categories/0/questions')
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
 
-    # # Test quiz
-    # def test_quiz(self):
-    #     res = self.client().post('/quizzes', json=self.quiz)
-    #     data = json.loads(res.data)
+    # Test quiz
+    def test_quiz(self):
+        res = self.client().post('/quizzes', json=self.quiz)
+        data = json.loads(res.data)
         
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertTrue(data['question']['category'], '3')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['current_question']['category'], '3')
     
-    # def test_404_quiz_not_found(self):
-    #     quiz = {
-    #         'previous_questions': [8],
-    #         'quiz_category': {
-    #             'type': 'XXX',
-    #             'id': 'X'
-    #         }
-    #     }
-    #     res = self.client().post('/quizzes', json=quiz)
-    #     data = json.loads(res.data)
+    def test_404_quiz_not_found(self):
+        quiz = {
+            'previous_questions': [8],
+            'quiz_category': {
+                'type': 'XXX',
+                'id': 'X'
+            }
+        }
+        res = self.client().post('/quizzes', json=quiz)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'], 'resource not found')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
 
 
 # Make the tests conveniently executable
