@@ -1,11 +1,32 @@
 # Backend - Trivia API
 
-### Pre-requisites and Local Development
+## Pre-requisites and Local Development
 
 
 Developers who wishes to work on this project should already have Python3, pip and node installed.
 
-#### Backend
+### Backend
+
+
+#### Error Messages
+
+
+Errors are returned as JSON objects in the following format:
+```json
+{
+    'success': False,
+    'message': 'Bad request',
+    'error': 400
+}
+```
+
+The API will return 4 possible error types when requests fail
+Error code | Message
+--- | --- 
+400 | Bad request
+404 | resource not found
+405 | method not allowed
+422 | resource unprocessable
 
 
 From the backend folder, run ```bash pip install requirements.txt```. All required packages are included in the requirements file.
