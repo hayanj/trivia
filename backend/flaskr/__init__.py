@@ -8,18 +8,6 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-# A function to help in paginating the questions
-
-
-def paginate_questions(request, selection):
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    formatted_questions = [question.format() for question in selection]
-
-    return formatted_questions[start:end]
-
-
 def create_app(test_config=None):
     # Create and configure the app
     app = Flask(__name__)
@@ -48,13 +36,16 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def get_categories():
-        selection = Category.query.order_by(Category.id).all()
-        categories = [category.type for category in selection]
+        try:
+            selection = Category.query.order_by(Category.id).all()
+            categories = [category.type for category in selection]
 
-        return jsonify({
-            'success': True,
-            'categories': categories,
-        })
+            return jsonify({
+                'success': True,
+                'categories': categories,
+            })
+        except:
+            abort(404)
 
     """
     Endpoint to handle GET requests for questions,
@@ -66,8 +57,9 @@ def create_app(test_config=None):
     def get_questions():
         try:
             # Select all questions to paginate
-            selection = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, selection)
+            page = request.args.get('page', 1, type=int)
+            selection = Question.query.order_by(Question.id).paginate(page, QUESTIONS_PER_PAGE, False)
+            current_questions = [question.format() for question in selection.items]
 
             # If there are no more questions return 404
             if (len(current_questions) == 0):
@@ -83,7 +75,7 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'questions': current_questions,
-                'total_questions': len(selection),
+                'total_questions': len(Question.query.all()),
                 'categories': categories,
                 'current_category': current_category
             })
@@ -105,10 +97,11 @@ def create_app(test_config=None):
 
             # Get current category from args if exists
             current_category = request.args.get('category')
-
+            
             # Select all questions to paginate
-            selection = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, selection)
+            page = request.args.get('page', 1, type=int)
+            selection = Question.query.order_by(Question.id).all().paginate(page, QUESTIONS_PER_PAGE, False)
+            current_questions = [question.format() for question in selection.items]
 
             # Select all categories and extract the type
             c_selection = Category.query.order_by(Category.id).all()
@@ -117,7 +110,7 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'questions': current_questions,
-                'total_questions': len(selection),
+                'total_questions': len(Question.query.all()),
                 'categories': categories,
                 'current_category': current_category
             })
@@ -143,7 +136,10 @@ def create_app(test_config=None):
             # Create new question and add to db
             question = Question(question=question, answer=answer,
                                 difficulty=difficulty, category=category)
-            question.insert()
+            if(question is not None):
+                question.insert()
+            else:
+                abort(422)
 
             # Select all questions
             questions = Question.query.order_by(Question.id).all()
@@ -169,10 +165,11 @@ def create_app(test_config=None):
         try:
             # Select all questions that includes the search term and paginate
             # them
+            page = request.args.get('page', 1, type=int)
             selection = Question.query.order_by(Question.id).filter(
                 Question.question.ilike("%{}%".format(search_term))
-            )
-            current_questions = paginate_questions(request, selection)
+            ).paginate(page, QUESTIONS_PER_PAGE, False)
+            current_questions = [question.format() for question in selection.items]
 
             # Get current category from args if exists
             current_category = request.args.get('category')
@@ -197,14 +194,15 @@ def create_app(test_config=None):
         category = Category.query.filter_by(id=category_id).one_or_none()
         try:
             # Select all questions that belongs to the category and paginate
+            page = request.args.get('page', 1, type=int)
             questions = Question.query.filter_by(
-                category=str(category.id)).all()
-            current_questions = paginate_questions(request, questions)
+                category=str(category.id)).all().paginate(page, QUESTIONS_PER_PAGE, False)
+            current_questions = [question.format() for question in questions.items]
 
             return jsonify({
                 "success": True,
                 "questions": current_questions,
-                "total_questions": len(questions),
+                "total_questions": len(Question.query.all()),
                 "current_category": category.type
             })
 
