@@ -7,6 +7,13 @@ import random
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
+def paginate_questions(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+    formatted_questions = [question.format() for question in selection]
+
+    return formatted_questions[start:end]
 
 def create_app(test_config=None):
     # Create and configure the app
@@ -44,7 +51,7 @@ def create_app(test_config=None):
                 'success': True,
                 'categories': categories,
             })
-        except:
+        except BaseException:
             abort(404)
 
     """
@@ -58,8 +65,11 @@ def create_app(test_config=None):
         try:
             # Select all questions to paginate
             page = request.args.get('page', 1, type=int)
-            selection = Question.query.order_by(Question.id).paginate(page, QUESTIONS_PER_PAGE, False)
-            current_questions = [question.format() for question in selection.items]
+            selection = Question.query.order_by(
+                Question.id).paginate(
+                page=page, per_page=QUESTIONS_PER_PAGE).items
+            current_questions = [question.format()
+                                 for question in selection]
 
             # If there are no more questions return 404
             if (len(current_questions) == 0):
@@ -97,11 +107,14 @@ def create_app(test_config=None):
 
             # Get current category from args if exists
             current_category = request.args.get('category')
-            
+
             # Select all questions to paginate
             page = request.args.get('page', 1, type=int)
-            selection = Question.query.order_by(Question.id).all().paginate(page, QUESTIONS_PER_PAGE, False)
-            current_questions = [question.format() for question in selection.items]
+            selection = Question.query.order_by(
+                Question.id).paginate(
+                page=page, per_page=QUESTIONS_PER_PAGE).items
+            current_questions = [question.format()
+                                 for question in selection]
 
             # Select all categories and extract the type
             c_selection = Category.query.order_by(Category.id).all()
@@ -168,8 +181,9 @@ def create_app(test_config=None):
             page = request.args.get('page', 1, type=int)
             selection = Question.query.order_by(Question.id).filter(
                 Question.question.ilike("%{}%".format(search_term))
-            ).paginate(page, QUESTIONS_PER_PAGE, False)
-            current_questions = [question.format() for question in selection.items]
+            ).paginate(page=page, per_page=QUESTIONS_PER_PAGE).items
+            current_questions = [question.format()
+                                 for question in selection]
 
             # Get current category from args if exists
             current_category = request.args.get('category')
@@ -178,7 +192,8 @@ def create_app(test_config=None):
                 {
                     "success": True,
                     "questions": current_questions,
-                    "total_questions": len(selection.all()),
+                    "total_questions": len(Question.query.order_by(Question.id).filter(
+                Question.question.ilike("%{}%".format(search_term))).all()),
                     "current_category": current_category
                 }
             )
@@ -192,22 +207,22 @@ def create_app(test_config=None):
     def get_questions_by_category(category_id):
         # Get the specific category
         category = Category.query.filter_by(id=category_id).one_or_none()
-        try:
-            # Select all questions that belongs to the category and paginate
-            page = request.args.get('page', 1, type=int)
-            questions = Question.query.filter_by(
-                category=str(category.id)).all().paginate(page, QUESTIONS_PER_PAGE, False)
-            current_questions = [question.format() for question in questions.items]
+        # try:
+        # Select all questions that belongs to the category and paginate
+        page = request.args.get('page', 1, type=int)
+        questions = Question.query.filter_by(category=str(category.id)).paginate(page=page, per_page=QUESTIONS_PER_PAGE).items
+        current_questions = [question.format()
+                                for question in questions]
 
-            return jsonify({
-                "success": True,
-                "questions": current_questions,
-                "total_questions": len(Question.query.all()),
-                "current_category": category.type
-            })
+        return jsonify({
+            "success": True,
+            "questions": current_questions,
+            "total_questions": len( Question.query.filter_by(category=str(category.id)).all()),
+            "current_category": category.type
+        })
 
-        except BaseException:
-            abort(404)
+        # except BaseException:
+        #     abort(404)
 
     """
     POST endpoint to get questions to play the quiz.

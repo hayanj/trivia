@@ -13,16 +13,17 @@ class QuestionView extends Component {
       totalQuestions: 0,
       categories: {},
       currentCategory: null,
+      searchTerm: '', // set search term to carry for pagination
     };
   }
-
+  
   componentDidMount() {
     this.getQuestions();
   }
 
   getQuestions = () => {
     $.ajax({
-      url: `/questions?page=${this.state.page}`, //TODO: update request URL
+      url: `/questions?page=${this.state.page}`, 
       type: 'GET',
       success: (result) => {
         this.setState({
@@ -39,9 +40,18 @@ class QuestionView extends Component {
       },
     });
   };
+  
 
   selectPage(num) {
-    this.setState({ page: num }, () => this.getQuestions());
+    if(this.state.searchTerm) {
+      this.setState({ page: num }, () => this.submitSearch(this.state.searchTerm, num)) // paginate search results
+    } 
+    else if (this.state.currentCategory) {
+      this.setState({ page: num }, () => this.getByCategory(Number(this.state.currentCategory), num)) // paginate questions by categories
+    } 
+    else {
+      this.setState({ page: num }, () => this.getQuestions()) // paginate all questions
+    }
   }
 
   createPagination() {
@@ -63,15 +73,16 @@ class QuestionView extends Component {
     return pageNumbers;
   }
 
-  getByCategory = (id) => {
+  getByCategory = (id, page=1) => { // receives category id and page number
     $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
+      url: `/categories/${id}/questions?page=${page}`, // update url to include page number
       type: 'GET',
       success: (result) => {
         this.setState({
           questions: result.questions,
           totalQuestions: result.total_questions,
-          currentCategory: result.current_category,
+          currentCategory: id,  // set current category to category id 
+          page: page, 
         });
         return;
       },
@@ -82,9 +93,9 @@ class QuestionView extends Component {
     });
   };
 
-  submitSearch = (searchTerm) => {
+  submitSearch = (searchTerm, page=1) => { // receives searchTerm and page number
     $.ajax({
-      url: `/questions/search`, //TODO: update request URL
+      url: `/questions/search?page=${page}`, 
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
@@ -98,6 +109,9 @@ class QuestionView extends Component {
           questions: result.questions,
           totalQuestions: result.total_questions,
           currentCategory: result.current_category,
+          searchTerm: searchTerm, // set search term to carry for pagination
+
+          page: page, 
         });
         return;
       },
