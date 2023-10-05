@@ -53,7 +53,18 @@ Authentication: This version of the application does not require authentication 
 ### Error Messages
 
 
+The API will return 4 possible error types when requests fail
+Error code | Message
+--- | --- 
+400 | Bad request
+404 | resource not found
+405 | method not allowed
+422 | resource unprocessable
+
 Errors are returned as JSON objects in the following format:
+#### 400 Bad request
+
+
 ```json
 {
     'success': False,
@@ -62,13 +73,38 @@ Errors are returned as JSON objects in the following format:
 }
 ```
 
-The API will return 4 possible error types when requests fail
-Error code | Message
---- | --- 
-400 | Bad request
-404 | resource not found
-405 | method not allowed
-422 | resource unprocessable
+#### 404 resource not found
+
+
+```json
+{
+    'success': False,
+    'message': 'resource not found',
+    'error': 404
+}
+```
+
+#### 405 method not allowed
+
+
+```json
+{
+    'success': False,
+    'message': 'method not allowed',
+    'error': 404
+}
+```
+
+#### 422 method not allowed
+
+
+```json
+{
+    'success': False,
+    'message': 'resource unprocessable',
+    'error': 422
+}
+```
 
 ### API Endpoints
 
@@ -287,6 +323,32 @@ curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json"
     ],
     'total_questions': 100,
     'current_category': 'Entertainment',
+    'success': true
+}
+```
+
+#### POST '/categories'
+
+
+Sends a post request in order to create a new category
+Expects: A request body with this structure:
+```json
+{
+    'type': 'a new category type'
+}
+```
+Returns: 
+* The new category ID, total number of questions, and success value
+
+
+Sample: 
+```curl
+curl http://127.0.0.1:5000/categories -X POST -H "Content-Type: application/json" -d '{ 'type': 'a new category type' } '
+```
+```json
+{
+    'total_questions': 100,
+    'current_category': 15,
     'success': true
 }
 ```
