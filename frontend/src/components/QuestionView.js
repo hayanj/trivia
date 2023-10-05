@@ -43,6 +43,7 @@ class QuestionView extends Component {
   
 
   selectPage(num) {
+    // took insparation from https://github.com/SaidAbbos96/trivia_api/blob/master/frontend/src/components/QuestionView.js
     if(this.state.searchTerm) {
       this.setState({ page: num }, () => this.submitSearch(this.state.searchTerm, num)) // paginate search results
     } 
