@@ -31,6 +31,9 @@ def create_app(test_config=None):
         )
         return response
 
+###################################################################
+#  Categories
+###################################################################
     """
     Endpoint to handle GET requests for all available categories.
     """
@@ -46,7 +49,39 @@ def create_app(test_config=None):
             })
         except BaseException:
             abort(404)
+    
+    """
+    Endpoint to create a new category,
+    which will require the type.
+    """
+    @app.route('/categories', methods=['POST'])
+    def create_category():
+        try:
+            # Get questions parameters
+            body = request.get_json()
+            type = body.get('type', None)
 
+            # Create new question and add to db
+            category = Category(type=type)
+            if(category is not None):
+                category.insert()
+            else:
+                abort(422)
+
+            # Select all questions
+            questions = Question.query.order_by(Question.id).all()
+
+            return jsonify({
+                'success': True,
+                'created': category.id,
+                'total_questions': len(questions)
+            })
+        except BaseException:
+            abort(405)
+
+###################################################################
+#  Questions
+###################################################################
     """
     Endpoint to handle GET requests for questions,
     including pagination (every 10 questions).
@@ -198,25 +233,28 @@ def create_app(test_config=None):
     """
     @app.route('/categories/<int:category_id>/questions')
     def get_questions_by_category(category_id):
-        # Get the specific category
+        #Get the specific category
         category = Category.query.filter_by(id=category_id).one_or_none()
-        # try:
-        # Select all questions that belongs to the category and paginate
-        page = request.args.get('page', 1, type=int)
-        questions = Question.query.filter_by(category=str(category.id)).paginate(page=page, per_page=QUESTIONS_PER_PAGE).items
-        current_questions = [question.format()
-                                for question in questions]
+        try:
+            #Select all questions that belongs to the category and paginate
+            page = request.args.get('page', 1, type=int)
+            questions = Question.query.filter_by(category=str(category.id)).paginate(page=page, per_page=QUESTIONS_PER_PAGE).items
+            current_questions = [question.format()
+                                    for question in questions]
 
-        return jsonify({
-            "success": True,
-            "questions": current_questions,
-            "total_questions": len( Question.query.filter_by(category=str(category.id)).all()),
-            "current_category": category.type
-        })
+            return jsonify({
+                "success": True,
+                "questions": current_questions,
+                "total_questions": len( Question.query.filter_by(category=str(category.id)).all()),
+                "current_category": category.type
+            })
 
-        # except BaseException:
-        #     abort(404)
+        except BaseException:
+            abort(404)
 
+###################################################################
+#  Quiz
+###################################################################
     """
     POST endpoint to get questions to play the quiz.
     This endpoint should take category and previous question parameters
