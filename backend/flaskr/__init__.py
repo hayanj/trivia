@@ -47,7 +47,8 @@ def create_app(test_config=None):
                 'success': True,
                 'categories': categories,
             })
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
     
     """
@@ -76,8 +77,10 @@ def create_app(test_config=None):
                 'created': category.id,
                 'total_questions': len(questions)
             })
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(405)
+
 
 ###################################################################
 #  Questions
@@ -117,7 +120,8 @@ def create_app(test_config=None):
                 'categories': categories,
                 'current_category': current_category
             })
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
 
     """
@@ -156,7 +160,8 @@ def create_app(test_config=None):
                 'current_category': current_category
             })
 
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
 
     """
@@ -190,7 +195,8 @@ def create_app(test_config=None):
                 'created': question.id,
                 'total_questions': len(questions)
             })
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(405)
 
     """
@@ -225,7 +231,8 @@ def create_app(test_config=None):
                     "current_category": current_category
                 }
             )
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
 
     """
@@ -249,7 +256,8 @@ def create_app(test_config=None):
                 "current_category": category.type
             })
 
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
 
 ###################################################################
@@ -288,7 +296,8 @@ def create_app(test_config=None):
                 'success': True,
                 'question': random_question.format()
             })
-        except BaseException:
+        except Exception as e:
+            print(e)
             abort(404)
 
     """
