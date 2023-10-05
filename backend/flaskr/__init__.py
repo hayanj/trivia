@@ -7,13 +7,6 @@ import random
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
-def paginate_questions(request, selection):
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    formatted_questions = [question.format() for question in selection]
-
-    return formatted_questions[start:end]
 
 def create_app(test_config=None):
     # Create and configure the app
